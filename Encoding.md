@@ -8,9 +8,9 @@ Configuration settings:
 
 Also set the .htaccess file if needed. See [this](https://processwire.com/blog/posts/hello-%E5%81%A5%E5%BA%B7%E9%95%B7%E5%A3%BD%C2%B7%E7%B9%81%E6%A6%AE%E6%98%8C%E7%9B%9B/) post.  
 You can check the results by issuing these commands (using e.g. Tracy Debugger's console):  
-$str = 'éáőúóüö'; // put your custom chars here
-d($str);
-d($sanitizer->pageNameUTF8($str, true));
+* $str = 'éáőúóüö'; // put your custom chars here
+* d($str);
+* d($sanitizer->pageNameUTF8($str, true));
 
 ## MySQL
 In addition to choosing utf8 encoding you also have to set proper database collation.  
