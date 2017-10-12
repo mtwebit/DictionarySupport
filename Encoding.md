@@ -14,7 +14,7 @@ You can check the results by issuing these commands (using e.g. Tracy Debugger's
 
 ## MySQL
 In addition to choosing utf8 encoding you also have to set proper database collation.  
-ProcessWire uses utf8_general_ci which texts if they were all ASCII, sans accents.  
+The default is usually utf8_general_ci which handles texts if they were all ASCII and have no accents which is bad.  
 Check the collation:
 * SHOW VARIABLES LIKE 'collation%';
 * SELECT TABLE_NAME, COLUMN_NAME, COLLATION_NAME  FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='your-pw-db-name';
