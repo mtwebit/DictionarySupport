@@ -230,7 +230,7 @@ class DictionaryRenderer extends WireData implements Module {
       return '';
     }
 
-    $tagNames = array_flip(json_decode(trim($this->tagmappings), true));
+    $tagNames = array_flip(json_decode(trim($this->modules->Dictionary->tagmappings), true));
     $out = '';
 
     while ($xml->read()) {
