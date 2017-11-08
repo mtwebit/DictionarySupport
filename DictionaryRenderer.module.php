@@ -102,11 +102,12 @@ class DictionaryRenderer extends WireData implements Module {
    * @returns html string to output
    */
   public function renderLetterNav($dictPage, $pattern, $liClass=' class="nav-item"', $aClass=' class="nav-link"', $countHeadwords = false) {
-    /************ PERFORMANCE DEBUGGING ********************************/
-    if (class_exists('\Zarganwar\PerformancePanel\Register'))
-      \Zarganwar\PerformancePanel\Register::add('renderLetterNav_start');
-    /*******************************************************************/
     $out = '';
+
+    // always use the default language for listing headwords
+    // TODO multilanguage dictionaries are not supported atm
+    $lang = $this->languages->get('default');
+
     if (is_array($pattern)) {
       $letters = $pattern;
     } else {
@@ -127,19 +128,15 @@ class DictionaryRenderer extends WireData implements Module {
         $text = $t;
         $selector = $u;
       }
-      if ($countHeadwords) {
-        $count = $this->pages->count('parent='.$dictPage.',title^="'.$selector.'"');
-        if ($count == 0) continue;
-        $text .= " ($count)";
-      }
+      // always use the default language for querying headwords
+      $count = $this->pages->count('parent='.$dictPage.',title^="'.$selector.'"');
+      if ($count == 0) continue;
+      if ($countHeadwords) $text .= " ($count)";
       $out .= "<a href='{$dictPage->url}?w={$url}'{$aClass}>{$text}</a>";
       if (!is_null($liClass)) $out .= '</li>';
       $out .= "\n";
     }
-    /************ PERFORMANCE DEBUGGING ********************************/
-    if (class_exists('\Zarganwar\PerformancePanel\Register'))
-      \Zarganwar\PerformancePanel\Register::add('renderLetterNav_end');
-    /*******************************************************************/
+
     return $out;
   }
 
@@ -153,11 +150,12 @@ class DictionaryRenderer extends WireData implements Module {
    * @returns html string to output
    */
   public function renderHeadwordNav($dictPage, $selector='', $liClass=' class="nav-item"', $aClass=' class="nav-link"') {
-    /************ PERFORMANCE DEBUGGING ********************************/
-    if (class_exists('\Zarganwar\PerformancePanel\Register'))
-      \Zarganwar\PerformancePanel\Register::add('renderHeadwordNav_start');
-    /*******************************************************************/
     $out = '';
+    // always use the default language for listing headwords
+    // TODO multilanguage dictionaries are not supported atm
+    $lang = $this->user->language;
+    $this->user->language = $this->languages->get('default');
+
     $headwords = $dictPage->children($selector);
     foreach ($headwords as $headword) {
       if (!is_null($liClass)) $out .= "<li$liClass>";
@@ -169,10 +167,10 @@ class DictionaryRenderer extends WireData implements Module {
       if (!is_null($liClass)) $out .= '</li>';
       $out .= "\n";
     }
-    /************ PERFORMANCE DEBUGGING ********************************/
-    if (class_exists('\Zarganwar\PerformancePanel\Register'))
-      \Zarganwar\PerformancePanel\Register::add('renderHeadwordNav_end');
-    /*******************************************************************/
+
+    // restore the original language
+    $this->user->language = $lang;
+
     return $out;
   }
 
@@ -230,7 +228,7 @@ class DictionaryRenderer extends WireData implements Module {
       return '';
     }
 
-    $tagNames = array_flip(json_decode(trim($this->modules->Dictionary->tagmappings), true));
+    $tagNames = array_flip(json_decode(trim($this->modules->DictionaryXmlProcessor->tagmappings), true));
     $out = '';
 
     while ($xml->read()) {
