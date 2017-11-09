@@ -267,13 +267,9 @@ class Dictionary extends WireData implements Module {
     // store a few headword names to print out
     $count = 0; $deleted = array();
 
-// TODO which one is better when deleting large number of pages?
-//    $children = $dictPage->children('template='.$this->headword_template.',include=all');
-    $childIDs = $this->pages->findIDs('parent='.$dictPage->id.',template='.$this->headword_template.',include=all');
+    $children = $this->pages->findMany('parent='.$dictPage->id.',template='.$this->headword_template.',include=all');
 
-//    foreach ($children as $child) {
-    foreach ($childIDs as $childID) {
-      $child = $this->pages->get($childID);
+    foreach ($children as $child) {
       $taskData['records_processed']++;
       if ($count++ < 10) $deleted[] = $child->title;
 //      $child->trash();  // probably not a good idea to fill the trash
