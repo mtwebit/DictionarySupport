@@ -16,40 +16,56 @@ class DictionaryRenderer extends WireData implements Module {
   // TODO: vendégek számára elérhető mintakészlet mérete
   // the base URL of the module's admin page
   public $adminUrl;
+  // letter substitutions in user input (what => with)
+  // the result is used in indices and selectors
+  public $dictLetterSubstitutions = array(
+    'á' => 'a',
+    'é' => 'e',
+    'í' => 'i',
+    'ó' => 'o',
+    'ő' => 'ö',
+    'ú' => 'u',
+    'ű' => 'ü',
+  );
   // default initial letters for navigation trees
   public $dictInitialLetters = array(
-    'a' => 'A, Á',
-    'b' => 'B',
-    'c' => 'C',
-    'cs' => 'Cs',
-    'd' => 'D',
-    'dzs' => 'Dzs',
-    'e' => 'E, É',
-    'f' => 'F',
-    'g' => 'G',
-    'gy' => 'Gy',
-    'h' => 'H',
-    'i' => 'I, Í',
-    'j' => 'J',
-    'k' => 'K',
-    'l' => 'L',
-    'm' => 'M',
-    'n' => 'N',
-    'ny' => 'Ny',
-    'o' => 'O, Ó',
-    'ö' => 'Ö, Ő',
-    'p' => 'P',
-    'q' => 'Q',
-    'r' => 'R',
-    's' => 'S',
-    'sz' => 'Sz',
-    't' => 'T',
-    'ty' => 'Ty',
-    'u' => 'U, Ú',
-    'ü' => 'Ü, Ű',
-    'v' => 'V',
-    'z' => 'Z',
-    'zs' => 'Zs',
+    'a' => 'a, á',
+    'b' => 'b',
+    'c' => 'c',
+    'cs' => 'cs',
+    'd' => 'd',
+    'dz' => 'dz',
+    'dzs' => 'dzs',
+    'e' => 'e, é',
+    'f' => 'f',
+    'g' => 'g',
+    'gy' => 'gy',
+    'h' => 'h',
+    'i' => 'i, í',
+    'j' => 'j',
+    'k' => 'k',
+    'l' => 'l',
+    'ly' => 'ly',
+    'm' => 'm',
+    'n' => 'n',
+    'ny' => 'ny',
+    'o' => 'o, ó',
+    'ö' => 'ö, ő',
+    'p' => 'p',
+    'q' => 'q',
+    'r' => 'r',
+    's' => 's',
+    'sz' => 'sz',
+    't' => 't',
+    'ty' => 'ty',
+    'u' => 'u, ú',
+    'ü' => 'ü, ű',
+    'v' => 'v',
+    'w' => 'w',
+    'x' => 'x',
+    'y' => 'y',
+    'z' => 'z',
+    'zs' => 'zs',
     '-' => '-',
     '*' => '*',
     '$' => '$',
@@ -102,33 +118,52 @@ class DictionaryRenderer extends WireData implements Module {
    * @returns html string to output
    */
   public function renderLetterNav($dictPage, $pattern, $liClass=' class="nav-item"', $aClass=' class="nav-link"', $countHeadwords = false) {
-    $out = '';
+    $out = ''; $initial = '';
 
     // always use the default language for listing headwords
     // TODO multilanguage dictionaries are not supported atm
     $lang = $this->languages->get('default');
 
     if (is_array($pattern)) {
+      // print out these letters
       $letters = $pattern;
-    } else {
-      $letters = $this->dictInitialLetters;
+    } else if (is_string($pattern) && mb_strlen($pattern)) {
       // sanitizing pattern ($sanitizer->selectorValue() would not work well)
-      if (mb_strlen($pattern)) $pattern = str_replace('"', '', $pattern);
+      $pattern = str_replace('"', '', $pattern);
+      // assemble a set of letters for the menu
+      $letters = array(); $substr = '';
+      // add increasing number of starting letters of $pattern: 1 12 123 1234 ...
+      foreach (preg_split('//u', $pattern, -1, PREG_SPLIT_NO_EMPTY) as $letter) {
+        $substr .= $letter;
+        $index = mb_strtolower($substr);
+        if (isset($this->dictInitialLetters[$index])) {
+          // if the substring found in the default letters, get its qualified name
+          // this is the case with double and triple letters like sz, cs, dzs etc.
+          $letters[$index] = $this->dictInitialLetters[$index];
+          $initial = $index;
+        } else {
+          $letters[$index] = $substr;
+        }
+      }
+      // add possible letters after $pattern from the default letter set
+      foreach ($this->dictInitialLetters as $u => $l) {
+        $index = mb_strtolower($pattern).$u;
+        $letters[$index] = $index;
+      }
+    } else { // empty or invalid pattern, use the default letter set
+      $letters = $this->dictInitialLetters;
     }
+
     foreach ($letters as $u => $t) {
       if (!is_null($liClass)) $out .= "<li$liClass>";
-      if (is_null($aClass)) {
-        $out .= $t;
-      } else if (is_string($pattern) && mb_strlen($pattern)) {
-        $url = urlencode($pattern.$u);
-        $text = $pattern.$u;
-        $selector = $pattern.$u;
-      } else {
-        $url = urlencode($u);
-        $text = $t;
-        $selector = $u;
+      $url = urlencode($u);
+      $text = $t;
+      $selector = $u;
+      // for the active nav item add an extra span wrapper (TODO: this is a hack, avoid it)
+      if ($initial == $u) {
+        $text = '<span class="bg-primary text-white mx-2"> '.$text.' </span>';
       }
-      // always use the default language for querying headwords
+      // TODO always use the default language for querying headwords
       $count = $this->pages->count('parent='.$dictPage.',title^="'.$selector.'"');
       if ($count == 0) continue;
       if ($countHeadwords) $text .= " ($count)";
@@ -184,10 +219,6 @@ class DictionaryRenderer extends WireData implements Module {
    * @returns html string to output
    */
   public function renderHeadwordList($dictPage, $selector='', $liClass=' class="nav-item"', $aClass=' class="nav-link"') {
-    /************ PERFORMANCE DEBUGGING ********************************/
-    if (class_exists('\Zarganwar\PerformancePanel\Register'))
-      \Zarganwar\PerformancePanel\Register::add('renderHeadwordList_start');
-    /*******************************************************************/
     $out = '';
     if (!strlen($selector)) {
       $selector = 'limit=30,sort=random';
@@ -203,10 +234,6 @@ class DictionaryRenderer extends WireData implements Module {
       if (!is_null($liClass)) $out .= '</li>';
       $out .= "\n";
     }
-    /************ PERFORMANCE DEBUGGING ********************************/
-    if (class_exists('\Zarganwar\PerformancePanel\Register'))
-      \Zarganwar\PerformancePanel\Register::add('renderHeadwordList_end');
-    /*******************************************************************/
     return $out;
   }
 
@@ -218,10 +245,6 @@ class DictionaryRenderer extends WireData implements Module {
    * @returns html string to output
    */
   public function renderHeadwordData($headwordPage) {
-    /************ PERFORMANCE DEBUGGING ********************************/
-    if (class_exists('\Zarganwar\PerformancePanel\Register'))
-      \Zarganwar\PerformancePanel\Register::add('renderHeadword_start');
-    /*******************************************************************/
     $xml = new \XMLReader();
     if (false === $xml->xml(str_replace('_', ' ', $headwordPage->xml_data))) {
       $this->error("Error decoding xml_data in {$headwordPage->title}.");
@@ -259,11 +282,30 @@ class DictionaryRenderer extends WireData implements Module {
         }
       }
     }
-    /************ PERFORMANCE DEBUGGING ********************************/
-    if (class_exists('\Zarganwar\PerformancePanel\Register'))
-      \Zarganwar\PerformancePanel\Register::add('renderHeadwords_end');
-    /*******************************************************************/
     return $out;
   }
 
+/***********************************************************************
+ * UTILITY FUNCTIONS
+ **********************************************************************/
+  /**
+   * Sanitize user input
+   * 
+   * @param $input string
+   * @returns string to use as selector or array index
+   */
+  public function sanitizeInput($input) {
+    // TODO ?? mb_internal_encoding('UTF-8');
+    // TODO ?? html_entity_decode($input);
+
+    // filter out some illegal characters
+    $ret = mb_ereg_replace('["]', '', $input);
+
+    // replace letters with others
+    foreach ($this->dictLetterSubstitutions as $what => $with)
+      $ret = mb_ereg_replace($what, $with, $ret);
+
+    // lower case
+    return mb_strtolower($ret);
+  }
 }
