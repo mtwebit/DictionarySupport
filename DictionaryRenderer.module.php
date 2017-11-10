@@ -265,15 +265,22 @@ class DictionaryRenderer extends WireData implements Module {
         $out .= '<p>Megjegyzés: <i>'.$xml->readString()."</i></p>\n";
         break;
       case 'variant':
-        $out .= '<h3>'.$xml->readString()."</h3>\n";
+        $out .= '<h3 class="m-t-2 text-primary">'.$xml->readString()."</h3>\n";
         break;
       case 'wordform':
-        $out .= '<h5>'.$xml->readString()."</h5>\n";
+        $out .= '<h5 class="m-t-2 text-info">'.$xml->readString()."</h5>\n";
         break;
-      case 'cit':  // contains quote and bibl
+      case 'L': // ignored tags
+      case 'T':
+      case 'F':
+      case 'KT':
         break;
-      case 'quote':
-        $out .= $xml->readString();
+      case 'I':  // part of quote that was already printed
+        break;
+      case 'cit':  // contains quote and bibl, those handle the content
+        break;
+      case 'quote': // contains <I> around the headword form
+        $out .= '<span class="blockquote small">'.$xml->readInnerXML().'</span>';
         break;
       case 'bibl':
         $out .= '('.$xml->readString().")<br />\n";
