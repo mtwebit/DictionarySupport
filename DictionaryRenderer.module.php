@@ -270,6 +270,8 @@ class DictionaryRenderer extends WireData implements Module {
       case 'wordform':
         $out .= '<h5>'.$xml->readString()."</h5>\n";
         break;
+      case 'cit':  // contains quote and bibl
+        break;
       case 'quote':
         $out .= $xml->readString();
         break;
