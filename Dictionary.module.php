@@ -5,9 +5,9 @@
 /*
  * Dictionary module
  * 
- * Provides dictionary support for ProcessWire.
+ * Provides dictionary support functions for ProcessWire.
  * 
- * Copyright 2017 Tamas Meszaros <mt+github@webit.hu>
+ * Copyright 2017 Tamas Meszaros <mt+git@webit.hu>
  * This file licensed under Mozilla Public License v2.0 http://mozilla.org/MPL/2.0/
  */
  
@@ -28,7 +28,6 @@ class Dictionary extends WireData implements Module {
   /**
    * Called only when this module is installed
    * 
-   * Creates new custom database table for storing import configuration data.
    */
   public function ___install() {
   }
@@ -37,7 +36,6 @@ class Dictionary extends WireData implements Module {
   /**
    * Called only when this module is uninstalled
    * 
-   * Drops database table created during installation.
    */
   public function ___uninstall() {
   }
@@ -166,13 +164,22 @@ class Dictionary extends WireData implements Module {
       return false; // could not find the file(s)
     }
 
-    // get a reference to the XML processor
-    $xmlproc = $this->modules->getModule('DictionaryXmlProcessor');
+    // detect the content type and select the appropriate input processor
+    switch(mime_content_type($file)) {
+    case 'application/xml':
+      $proc = $this->modules->getModule('DictionaryXmlProcessor');
+    // TODO case 'application/json':
+    // TODO case 'application/zip':
+    // TODO case 'application/sql':
+    default:
+      $this->error('Content type '.mime_content_type($file).' is not supported');
+      return false;
+    }
 
     // estimate and return the task size if requested
     if (isset($params['estimation'])) {
       // TODO check file type and select the appropriate module
-      return $xmlproc->countFileRecords($file);
+      return $proc->countFileRecords($file);
     }
 
     // check if this is the first invocation
@@ -198,10 +205,8 @@ class Dictionary extends WireData implements Module {
 
     $this->message("Processing file {$file->name}.", Notice::debug);
 
-    // TODO check file type and select the appropriate module
-
     // import the dictionary from the file
-    $ret = $xmlproc->importFromFile($dictPage, $file, $taskData, $params);
+    $ret = $proc->importFromFile($dictPage, $file, $taskData, $params);
 
     // check if the import failed
     if ($ret === false) {
