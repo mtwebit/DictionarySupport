@@ -7,7 +7,7 @@
  * 
  * Provides dictionary support for ProcessWire.
  * 
- * Copyright 2017 Tamas Meszaros <mt+github@webit.hu>
+ * Copyright 2017 Tamas Meszaros <mt+git@webit.hu>
  * This file licensed under Mozilla Public License v2.0 http://mozilla.org/MPL/2.0/
  */
 
@@ -15,10 +15,7 @@ class DictionaryConfig extends ModuleConfig {
 
   public function getDefaults() {
     return array(
-      'sourcefield' => 'dict_source',
-      'optionsfield' => 'dict_options',
-      'logfield' => 'dict_log',
-      'taskfield' => 'dict_tasks',
+      'sourcefield' => 'sourcefield',
       'dictionary_template' => 'dictionary',
       'headword_template' => 'headword',
 //      'variant_template' => 'variant',
@@ -116,7 +113,7 @@ See also PW extended page names support and db charset settings.</li>
     $f->required = true;
     $f->columnWidth = 50;
     foreach($this->wire('templates') as $template) {
-      if ($template->hasField('dict_source')) { // TODO check for a better field
+      if ($template->hasField('sourcefield')) { // TODO check for a better field
         $f->addOption($template->name, $template->name);
       }
     }
