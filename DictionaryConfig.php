@@ -113,8 +113,10 @@ See also PW extended page names support and db charset settings.</li>
     $f->required = true;
     $f->columnWidth = 50;
     foreach($this->wire('templates') as $template) {
-      if ($template->hasField('sourcefield')) { // TODO check for a better field
-        $f->addOption($template->name, $template->name);
+      foreach($template->fields as $field) {
+        if ($field->type instanceof FieldtypeFile) {
+          $f->addOption($template->name, $template->name);
+        }
       }
     }
     $fieldset->add($f);
@@ -127,8 +129,10 @@ See also PW extended page names support and db charset settings.</li>
     $f->required = true;
     $f->columnWidth = 50;
     foreach($this->wire('templates') as $template) {
-      if ($template->hasField('xml_data')) { // TODO check for a better field
-        $f->addOption($template->name, $template->name);
+      foreach($template->fields as $field) {
+        if ($field->type instanceof FieldtypeFile) {
+          $f->addOption($template->name, $template->name);
+        }
       }
     }
     $fieldset->add($f);

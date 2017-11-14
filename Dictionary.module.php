@@ -165,7 +165,7 @@ class Dictionary extends WireData implements Module {
     }
 
     // detect the content type and select the appropriate input processor
-    switch(mime_content_type($file)) {
+    switch(mime_content_type($file->filename)) {
     case 'application/xml':
       $proc = $this->modules->getModule('DictionaryXmlProcessor');
     // TODO case 'application/json':
