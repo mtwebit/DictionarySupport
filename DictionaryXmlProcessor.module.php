@@ -21,8 +21,6 @@ class DictionaryXmlProcessor extends WireData implements Module {
 
   /**
    * Called only when this module is installed
-   * 
-   * Creates new custom database table for storing import configuration data.
    */
   public function ___install() {
   }
@@ -30,8 +28,6 @@ class DictionaryXmlProcessor extends WireData implements Module {
 
   /**
    * Called only when this module is uninstalled
-   * 
-   * Drops database table created during installation.
    */
   public function ___uninstall() {
   }
@@ -43,11 +39,6 @@ class DictionaryXmlProcessor extends WireData implements Module {
    * This function attaches a hook for page save and decodes module options.
    */
   public function init() {
-    // check requirements
-    if (!$this->modules->isInstalled("Dictionary")) {
-      return;
-    }
-
     $this->tagNames = json_decode(trim($this->tagmappings), true);
     if (!is_array($this->tagNames)) {
       $this->error('Invalid XML name mappings. Check the module\'s configuration.');
@@ -225,7 +216,7 @@ class DictionaryXmlProcessor extends WireData implements Module {
    * TODO process the XML data and store it in other format?
    * 
    * @param $dictPage that stores the headword (parent Page)
-   * @param $headword string name
+   * @param $headword unique string name for the headword
    * @param $xml_data headword data in XML form
    * @param $tags command options: IMPORT, UPDATE, DELETE old version first (coming from file tags)
    * returns PW Page object that has been added/updated, NULL otherwise
@@ -236,7 +227,7 @@ class DictionaryXmlProcessor extends WireData implements Module {
       return NULL;
     }
 
-    // check and normalize headword
+    // check and normalize the headword
     if (strlen($headword)<1) {
       $this->error("Invalid headword '{$headword}' found in the input.");
       return NULL;
