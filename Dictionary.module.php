@@ -172,7 +172,7 @@ class Dictionary extends WireData implements Module {
     // TODO case 'application/zip':
     // TODO case 'application/sql':
     default:
-      $this->error('Content type '.mime_content_type($file).' is not supported');
+      $this->error('Content type '.mime_content_type($file->filename).' is not supported');
       return false;
     }
 
