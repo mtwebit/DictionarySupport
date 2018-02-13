@@ -1,9 +1,13 @@
 # DictionarySupport
 Dictionary support module for ProcessWire
 
-## Work in progress
-Please note that these modules are not finished and they are in continuous development as of October, 2017.  
-Second note: PW 3.0.62 has a bug and needs manual fix for conditional hooks.
+## It is now obsolete
+After rethinking the functionality of DictionarySupport I created a new module called DataSet.  
+It provides better import configuration options and it has more application possibilities.  
+
+## Notes
+DictionarySupport is in beta. Use it accordingly.  
+PW 3.0.62 has a bug and needs manual fix for conditional hooks.
 See [this issue](https://github.com/processwire/processwire-issues/issues/261) for a fix or upgrade to the latest dev.
 
 ## Purpose
